@@ -1,3 +1,5 @@
+import { WebBluetoothMock } from "web-bluetooth-mock";
+
 export enum BluetoothNotificationsStatus {
   READY = "ready",
   STOPPED = "stopped",
@@ -17,6 +19,8 @@ export enum BluetoothEvent {
   onServiceChanged = "servicechanged",
   onServiceRemoved = "serviceremoved",
 }
+
+export type BluetoothMock = Bluetooth & WebBluetoothMock;
 
 export interface BluetoothNotificationsHookOptions {
   characteristicUuid: string;
