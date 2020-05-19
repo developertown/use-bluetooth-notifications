@@ -27,7 +27,7 @@
       "pre-commit": "tsdx lint"
     }
   },
-  "name": "use-bluetooth-notifications",
+  "name": "@developertown/use-bluetooth-notifications",
   "author": "Matt Williams",
   "module": "dist/use-bluetooth-notifications.esm.js",
   "devDependencies": {
