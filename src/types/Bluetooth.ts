@@ -88,3 +88,4 @@ export interface BluetoothConnections {
 
 export const HEALTH_THERMOMETER_UUID = "health_thermometer";
 export const TEMPERATURE_MEASUREMENT_UUID = "temperature_measurement";
+export const USER_CANCEL_ERROR_CODE = 8;

@@ -6,9 +6,6 @@ import {
   BluetoothNotificationsStatus,
 } from "../src/types/Bluetooth";
 import useBluetoothNotifications from "../src";
-import { getValue } from "./tools/a.out.js";
-
-// const { useCallback } = React;
 
 type TypographyColor =
   | "inherit"
@@ -38,11 +35,8 @@ export const BluetoothDisplay: React.FC<Props> = ({
   const [stream, setStream] = React.useState<number | null>(null);
 
   const parser = React.useCallback((val: DataView, offset = 0) => {
-    // const value = Bytelib.getValue(val, "i8");
-    // console.log("value", Bytelib, value);
-    // console.log("value", getValue(val, "i32"));
     const noFirstByte = val.buffer.slice(1);
-    console.log("value", getValue, val, noFirstByte, new Uint32Array(noFirstByte));
+    console.log("value", val, noFirstByte, new Uint32Array(noFirstByte));
     const a: string[] = [];
 
     // Convert raw data bytes to hex values just for the sake of showing something.
@@ -71,7 +65,7 @@ export const BluetoothDisplay: React.FC<Props> = ({
     characteristicUuid,
     onNotification,
     onError,
-    // parser,
+    parser,
   });
 
   const color = cn({

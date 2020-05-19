@@ -5,6 +5,7 @@ import {
   HEALTH_THERMOMETER_UUID,
   BluetoothNotificationsStatus,
   BluetoothEvent,
+  USER_CANCEL_ERROR_CODE,
 } from "./types/Bluetooth";
 import { useCallback, useState, useEffect, useMemo } from "react";
 import { getFloatValue } from "./utils/getFloatValue";
@@ -96,7 +97,7 @@ export function useBluetoothNotifications(
         throw new Error("No GATT server found");
       }
     } catch (error) {
-      if (error.code === 8) {
+      if (error.code === USER_CANCEL_ERROR_CODE) {
         setStatus(BluetoothNotificationsStatus.CANCELLED);
         return;
       }
