@@ -16,16 +16,14 @@ export enum BluetoothNotificationsStatus {
 }
 
 export enum BluetoothEvent {
-  onAdvertisementReceived = "onadvertisementreceived",
-  onAvailabilityChanged = "onavailabilitychanged",
-  onGATTServerDisconnected = "ongattserverdisconnected",
-  onCharacteristicValueChanged = "oncharacteristicvaluechanged",
-  onServiceAdded = "onserviceadded",
-  onServiceChanged = "onservicechanged",
-  onServiceRemoved = "onserviceremoved",
+  onAdvertisementReceived = "advertisementreceived",
+  onAvailabilityChanged = "availabilitychanged",
+  onGATTServerDisconnected = "gattserverdisconnected",
+  onCharacteristicValueChanged = "characteristicvaluechanged",
+  onServiceAdded = "serviceadded",
+  onServiceChanged = "servicechanged",
+  onServiceRemoved = "serviceremoved",
 }
-
-export type BluetoothEventHandler<T = void> = (event: Event) => T;
 
 export interface BluetoothDeviceRequestCancel {
   type: "cancel";
@@ -72,8 +70,9 @@ export interface BluetoothNotificationsHookOptions {
   characteristicUuid: string;
   serviceUuid: string;
   deviceOptions?: RequestDeviceOptions;
-  notificationHandler?: (parsed: string, event: Event) => void;
-  parser?: (data: DataView, offset: number) => string | number;
+  parser?: (data: DataView, offset?: number) => number | string;
+  onNotification?: (parsed: number | string, event: Event) => void;
+  onError?: (error: Error) => void;
 }
 
 export interface BluetoothConnections {

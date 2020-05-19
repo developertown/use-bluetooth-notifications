@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useCallback, PropsWithChildren, FC } from "react";
 import cn from "classnames";
 import {
   TEMPERATURE_MEASUREMENT_UUID,
@@ -7,6 +6,7 @@ import {
   BluetoothNotificationsStatus,
 } from "../src/types/Bluetooth";
 import useBluetoothNotifications from "../src";
+import { getValue } from "./tools/a.out.js";
 
 // const { useCallback } = React;
 
@@ -25,24 +25,53 @@ type Props = {
   characteristicUuid?: string;
 };
 
-const Grid: FC<PropsWithChildren<{}>> = ({ children }) => (
+const Grid: React.FC<React.PropsWithChildren<{}>> = ({ children }) => (
   <div style={{ padding: "1rem" }}>
     <div style={{ display: "grid", gridTemplateColumns: "100%", gridGap: "1rem" }}>{children}</div>
   </div>
 );
 
-export const BluetoothDisplay: FC<Props> = ({
+export const BluetoothDisplay: React.FC<Props> = ({
   serviceUuid = HEALTH_THERMOMETER_UUID,
   characteristicUuid = TEMPERATURE_MEASUREMENT_UUID,
 }) => {
-  const notificationHandler = useCallback((parsed: string, event: Event) => {
-    console.log("Hook notification handler", { parsed, event });
+  const [stream, setStream] = React.useState<number | null>(null);
+
+  const parser = React.useCallback((val: DataView, offset = 0) => {
+    // const value = Bytelib.getValue(val, "i8");
+    // console.log("value", Bytelib, value);
+    // console.log("value", getValue(val, "i32"));
+    const noFirstByte = val.buffer.slice(1);
+    console.log("value", getValue, val, noFirstByte, new Uint32Array(noFirstByte));
+    const a: string[] = [];
+
+    // Convert raw data bytes to hex values just for the sake of showing something.
+    // In the "real" world, you'd use data.getUint8, data.getUint16 or even
+    // TextDecoder to process raw data bytes.
+    a.push("0x");
+    for (let i = 0; i < val.byteLength; i++) {
+      a.push(("00" + val.getUint8(i).toString(16)).slice(-2));
+    }
+
+    console.log("parsed as string", parseInt(a.join("")));
+    return a.join(" ");
   }, []);
 
-  const { device, status, stream, startStream, stopStream } = useBluetoothNotifications({
+  const onNotification = React.useCallback((parsed: number, event: Event) => {
+    console.log("Hook notification handler", { parsed, event });
+    setStream(parsed);
+  }, []);
+
+  const onError = React.useCallback((error: Error) => {
+    console.error("Bluetooth Error:", error);
+  }, []);
+
+  const { device, status, startStream, stopStream } = useBluetoothNotifications({
     serviceUuid,
     characteristicUuid,
-    notificationHandler,
+    onNotification,
+    onError,
+    // parser,
   });
 
   const color = cn({
@@ -79,31 +108,35 @@ export const BluetoothDisplay: FC<Props> = ({
         </dd>
       </dl>
 
-      <button
-        onClick={async (event) => {
-          console.log("Starting notifications...");
-          try {
-            await startStream();
-          } catch (error) {
-            console.error("Error starting stream:", error);
-          }
-        }}
-      >
-        Start Notifications
-      </button>
+      <div>
+        <button
+          onClick={async (event) => {
+            console.log("Starting notifications...");
+            try {
+              await startStream();
+            } catch (error) {
+              console.error("Error starting stream:", error);
+            }
+          }}
+        >
+          Start Notifications
+        </button>
+      </div>
 
-      <button
-        onClick={async (event) => {
-          console.log("stopping notifications...");
-          try {
-            await stopStream();
-          } catch (error) {
-            console.error("Error starting stream:", error);
-          }
-        }}
-      >
-        Stop Notifications
-      </button>
+      <div>
+        <button
+          onClick={async (event) => {
+            console.log("stopping notifications...");
+            try {
+              await stopStream();
+            } catch (error) {
+              console.error("Error starting stream:", error);
+            }
+          }}
+        >
+          Stop Notifications
+        </button>
+      </div>
     </Grid>
   );
 };

@@ -4,72 +4,61 @@ import {
   TEMPERATURE_MEASUREMENT_UUID,
   HEALTH_THERMOMETER_UUID,
   BluetoothNotificationsStatus,
+  BluetoothEvent,
 } from "./types/Bluetooth";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useMemo } from "react";
 import { getFloatValue } from "./utils/getFloatValue";
-
-function parse(val: DataView) {
-  const a = [];
-
-  // Convert raw data bytes to hex values just for the sake of showing something.
-  // In the "real" world, you'd use data.getUint8, data.getUint16 or even
-  // TextDecoder to process raw data bytes.
-  for (let i = 0; i < val.byteLength; i++) {
-    a.push("0x" + ("00" + val.getUint8(i).toString(16)).slice(-2));
-  }
-
-  // console.log("> " + a.join(" "));
-  return a.join(" ");
-}
 
 export const defaultHookOptions = {
   serviceUuid: HEALTH_THERMOMETER_UUID,
   characteristicUuid: TEMPERATURE_MEASUREMENT_UUID,
+  deviceOptions: { filters: [{ services: [HEALTH_THERMOMETER_UUID] }] },
+  onNotification: (parsed: number | string, event: Event) => {
+    return;
+  },
+  parser: getFloatValue,
 };
 
-export function useBluetoothNotifications({
-  serviceUuid = HEALTH_THERMOMETER_UUID,
-  characteristicUuid = TEMPERATURE_MEASUREMENT_UUID,
-  deviceOptions = { filters: [{ services: [serviceUuid] }] },
-  notificationHandler,
-  parser = parse,
-}: // parser = getFloatValue,
-BluetoothNotificationsHookOptions = defaultHookOptions): BluetoothConnections {
+export function useBluetoothNotifications(
+  _options: BluetoothNotificationsHookOptions = defaultHookOptions,
+): BluetoothConnections {
   const [device, setDevice] = useState<BluetoothDevice>();
   const [server, setServer] = useState<BluetoothRemoteGATTServer>();
   const [service, setService] = useState<BluetoothRemoteGATTService>();
   const [characteristic, setCharacteristic] = useState<BluetoothRemoteGATTCharacteristic>();
-  const [stream, setStream] = useState<string>();
   const [status, setStatus] = useState<BluetoothNotificationsStatus>(BluetoothNotificationsStatus.READY);
 
-  function getBluetooth(): Bluetooth {
+  const { serviceUuid, characteristicUuid, deviceOptions, onNotification, onError, parser } = useMemo(() => {
+    return { ...defaultHookOptions, ..._options };
+  }, [_options]);
+
+  const bluetooth: Bluetooth = useMemo(() => {
     if (!navigator.bluetooth) {
-      throw new Error("This device is not capable of using bluetooth");
+      const error = new Error("This device is not capable of using bluetooth");
+      if (onError) {
+        onError(error);
+      } else {
+        throw error;
+      }
     }
     return navigator.bluetooth;
-  }
+  }, [onError]);
 
   const handleNotifications = useCallback(
     (event: Event) => {
       const value = (event.target as BluetoothRemoteGATTCharacteristic).value;
       if (value) {
-        const parsed = parser(value, value.byteOffset);
-        console.log("parsed", parsed);
-        setStream(`${parsed}`);
-        if (notificationHandler) {
-          notificationHandler(`${parsed}`, event);
+        // const parsed = parser(value, value.byteOffset);
+        const parsed = parser(value);
+        if (onNotification) {
+          onNotification(parsed, event);
         }
       }
     },
-    [notificationHandler, parser],
+    [onNotification, parser],
   );
 
   const reset = useCallback(() => {
-    if (characteristic) {
-      characteristic.removeEventListener("characteristicvaluechanged", handleNotifications);
-    }
-
-    // setStream(undefined);
     setCharacteristic(undefined);
     setService(undefined);
 
@@ -80,10 +69,9 @@ BluetoothNotificationsHookOptions = defaultHookOptions): BluetoothConnections {
 
     setDevice(undefined);
     setStatus(BluetoothNotificationsStatus.STOPPED);
-  }, [characteristic, handleNotifications, server]);
+  }, [server]);
 
   const startStream = useCallback(async () => {
-    const bluetooth = getBluetooth();
     try {
       setStatus(BluetoothNotificationsStatus.STARTING);
       let service: BluetoothRemoteGATTService;
@@ -112,10 +100,14 @@ BluetoothNotificationsHookOptions = defaultHookOptions): BluetoothConnections {
         setStatus(BluetoothNotificationsStatus.CANCELLED);
         return;
       }
-      console.error("Error starting notifications:", error);
       setStatus(BluetoothNotificationsStatus.ERROR);
+      if (onError) {
+        onError(error);
+      } else {
+        throw error;
+      }
     }
-  }, [characteristicUuid, deviceOptions, serviceUuid]);
+  }, [bluetooth, characteristicUuid, deviceOptions, onError, serviceUuid]);
 
   const stopStream = useCallback(async () => {
     try {
@@ -125,19 +117,23 @@ BluetoothNotificationsHookOptions = defaultHookOptions): BluetoothConnections {
         reset();
       }
     } catch (error) {
-      console.error("Error stopping notifications:", error);
-      throw error;
+      setStatus(BluetoothNotificationsStatus.ERROR);
+      if (onError) {
+        onError(error);
+      } else {
+        throw error;
+      }
     }
-  }, [characteristic, device, reset]);
+  }, [characteristic, device, onError, reset]);
 
   useEffect(() => {
     if (characteristic) {
-      characteristic.addEventListener("characteristicvaluechanged", handleNotifications);
+      characteristic.addEventListener(BluetoothEvent.onCharacteristicValueChanged, handleNotifications);
     }
 
     return () => {
       if (characteristic) {
-        characteristic.removeEventListener("characteristicvaluechanged", handleNotifications);
+        characteristic.removeEventListener(BluetoothEvent.onCharacteristicValueChanged, handleNotifications);
       }
     };
   }, [characteristic, handleNotifications]);
@@ -155,7 +151,6 @@ BluetoothNotificationsHookOptions = defaultHookOptions): BluetoothConnections {
     server,
     service,
     characteristic,
-    stream,
     status,
     startStream,
     stopStream,
