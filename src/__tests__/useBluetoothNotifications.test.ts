@@ -3,6 +3,7 @@ import {
   BluetoothNotificationsStatus,
   HEALTH_THERMOMETER_UUID,
   TEMPERATURE_MEASUREMENT_UUID,
+  BluetoothEvent,
 } from "../types/Bluetooth";
 import { renderHook, act } from "@testing-library/react-hooks";
 import { useBluetoothNotifications } from "..";
@@ -24,12 +25,18 @@ const DEVICE_NAME = "MyThermometer";
 
 describe("useBluetoothNotifications", () => {
   let device: DeviceMock;
+  let parser: jest.Mock<number | string, [DataView, Event]>;
+  let onNotification: jest.Mock<number | string, [DataView, Event]>;
+  let onError: jest.Mock<number | string, [DataView, Event]>;
 
   beforeEach(() => {
     // Setup a Mock device and register the Web Bluetooth Mock
     device = new DeviceMock(DEVICE_NAME, [HEALTH_THERMOMETER_UUID]);
     navigator.bluetooth = new WebBluetoothMock([device]) as BluetoothMock;
 
+    parser = jest.fn();
+    onNotification = jest.fn();
+    onError = jest.fn();
     jest.spyOn(device.gatt, "connect");
   });
 
@@ -62,26 +69,32 @@ describe("useBluetoothNotifications", () => {
 
     await act(async () => {
       await result.current.startStream();
-      result.current.characteristic?.dispatchEvent(new Event("characteristicvaluechanged"));
+      result.current.characteristic?.dispatchEvent(new Event(BluetoothEvent.onCharacteristicValueChanged));
     });
     expect(parser).toHaveBeenCalled();
   });
 
   test("should be able to use custom notification handler", async () => {
-    const notificationHandler = jest.fn();
+    const onNotification = jest.fn();
+    const onError = jest.fn();
+    const parser = jest.fn();
+
     const { result } = renderHook(() =>
       useBluetoothNotifications({
         serviceUuid: HEALTH_THERMOMETER_UUID,
         characteristicUuid: TEMPERATURE_MEASUREMENT_UUID,
-        notificationHandler,
+        onNotification,
+        onError,
+        parser,
       } as BluetoothNotificationsHookOptions),
     );
 
     await act(async () => {
       await result.current.startStream();
-      result.current.characteristic?.dispatchEvent(new Event("characteristicvaluechanged"));
+      result.current.characteristic?.dispatchEvent(new Event(BluetoothEvent.onCharacteristicValueChanged));
     });
-    expect(notificationHandler).toHaveBeenCalled();
+    expect(parser).toHaveBeenCalled();
+    expect(onNotification).toHaveBeenCalled();
   });
 
   test("should disconnect from server on unmount", async () => {

@@ -1,10 +1,3 @@
-export interface BluetoothNotificationsPayload {
-  status: BluetoothNotificationsStatus;
-  setListener: (listener: (data: BluetoothRemoteGATTCharacteristic) => void) => void;
-  startNotifications: () => void;
-  stopNotifications: () => void;
-}
-
 export enum BluetoothNotificationsStatus {
   READY = "ready",
   STOPPED = "stopped",
@@ -23,47 +16,6 @@ export enum BluetoothEvent {
   onServiceAdded = "serviceadded",
   onServiceChanged = "servicechanged",
   onServiceRemoved = "serviceremoved",
-}
-
-export interface BluetoothDeviceRequestCancel {
-  type: "cancel";
-}
-
-export interface BluetoothDeviceRequestSuccess {
-  type: "success";
-  device: BluetoothDevice;
-}
-
-export interface BluetoothGattConnectSuccess {
-  type: "success";
-  server: BluetoothRemoteGATTServer;
-}
-
-export interface BluetoothServiceRequestSuccess {
-  type: "success";
-  service: BluetoothRemoteGATTService;
-}
-
-export interface BluetoothCharacteristicRequestSuccess {
-  type: "success";
-  characteristic: BluetoothRemoteGATTCharacteristic;
-}
-
-export interface BluetoothStartStreamSuccess {
-  type: "success";
-  // stream: string;
-  device: BluetoothDevice;
-  server: BluetoothRemoteGATTServer;
-  service: BluetoothRemoteGATTService;
-  characteristic: BluetoothRemoteGATTCharacteristic;
-}
-
-export enum BluetoothDeviceRequestStatus {
-  CANCEL = "cancel",
-  ERROR = "error",
-  SUCCESS = "success",
-  REQUESTING = "requesting",
-  READY = "ready",
 }
 
 export interface BluetoothNotificationsHookOptions {

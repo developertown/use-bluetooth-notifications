@@ -21,7 +21,7 @@ function buf2hex(buffer: ArrayBuffer) {
  * @param value DataView
  * @param offset number
  */
-export const getFloatValue = (value: DataView, offset = 1): number => {
+export const getFloatValue = (value: DataView, offset = 0): number => {
   const buffer = new ArrayBuffer(5);
   const dv = new DataView(buffer);
   dv.setUint32(offset, 0x00016c);
@@ -34,19 +34,21 @@ export const getFloatValue = (value: DataView, offset = 1): number => {
 
   // this is how the bytes are arranged in the byte array/DataView
   // buffer
-  const [exponent, b0, b1, b2] = [
-    // get the first byte, which is the exponent, as a signed int
+  const [config, exponent, b0, b1, b2] = [
+    // get the config byte
+    value.getInt8(offset),
+
+    // get the second byte, which is the exponent, as a signed int
     // since it's already correct
-    // value.getInt8(offset),
-    value.getUint8(offset),
+    value.getInt8(offset + 1),
 
     // get last three bytes as unsigned since we only care
     // about the last 8 bits of 32-bit js number returned by
     // getUint8().
     // Should be the same as: getInt8(offset) & -1 >>> 24
-    value.getUint8(offset + 1),
     value.getUint8(offset + 2),
     value.getUint8(offset + 3),
+    value.getUint8(offset + 4),
   ];
 
   let mantissa = b2 | (b1 << 8) | (b0 << 16);
