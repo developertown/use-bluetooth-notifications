@@ -7,16 +7,6 @@ import {
 } from "../src/types/Bluetooth";
 import useBluetoothNotifications from "../src";
 
-type TypographyColor =
-  | "inherit"
-  | "initial"
-  | "primary"
-  | "secondary"
-  | "textPrimary"
-  | "textSecondary"
-  | "error"
-  | undefined;
-
 type Props = {
   serviceUuid?: string;
   characteristicUuid?: string;
