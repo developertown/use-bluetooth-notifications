@@ -63,5 +63,8 @@
     "tsdx": "^0.13.2",
     "typescript": "^3.9.2",
     "web-bluetooth-mock": "^1.0.2"
+  },
+  "dependencies": {
+    "@types/classnames": "^2.2.10"
   }
 }
