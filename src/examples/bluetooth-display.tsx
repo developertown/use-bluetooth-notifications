@@ -4,8 +4,8 @@ import {
   TEMPERATURE_MEASUREMENT_UUID,
   HEALTH_THERMOMETER_UUID,
   BluetoothNotificationsStatus,
-} from "../src/types/Bluetooth";
-import useBluetoothNotifications from "../src";
+} from "../types/Bluetooth";
+import useBluetoothNotifications from "..";
 
 type Props = {
   serviceUuid?: string;
@@ -34,7 +34,13 @@ export const BluetoothDisplay: React.FC<Props> = ({
     // TextDecoder to process raw data bytes.
     a.push("0x");
     for (let i = 0; i < val.byteLength; i++) {
-      a.push(("00" + val.getUint8(i).toString(16)).slice(-2));
+      a.push(
+        val
+          .getUint8(i)
+          .toString(16)
+          .slice(-2),
+      );
+      // a.push(("00" + val.getUint8(i).toString(16)).slice(-2));
     }
 
     console.log("parsed as string", parseInt(a.join("")));

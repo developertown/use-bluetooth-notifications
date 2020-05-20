@@ -1,5 +1,5 @@
 import React from "react";
-import BluetoothDisplay from "../example/bluetooth-display";
+import BluetoothDisplay from "../src/examples/bluetooth-display";
 import { HEALTH_THERMOMETER_UUID, TEMPERATURE_MEASUREMENT_UUID } from "../src/types/Bluetooth";
 
 export default {
