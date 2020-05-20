@@ -22,7 +22,7 @@ export const BluetoothDisplay: React.FC<Props> = ({
   serviceUuid = HEALTH_THERMOMETER_UUID,
   characteristicUuid = TEMPERATURE_MEASUREMENT_UUID,
 }) => {
-  const [stream, setStream] = React.useState<number | null>(null);
+  const [stream, setStream] = React.useState<number | string | null>(null);
 
   const parser = React.useCallback((val: DataView, offset = 0) => {
     const noFirstByte = val.buffer.slice(1);
@@ -34,20 +34,14 @@ export const BluetoothDisplay: React.FC<Props> = ({
     // TextDecoder to process raw data bytes.
     a.push("0x");
     for (let i = 0; i < val.byteLength; i++) {
-      a.push(
-        val
-          .getUint8(i)
-          .toString(16)
-          .slice(-2),
-      );
-      // a.push(("00" + val.getUint8(i).toString(16)).slice(-2));
+      a.push(("00" + val.getUint8(i).toString(16)).slice(-2));
     }
 
     console.log("parsed as string", parseInt(a.join("")));
     return a.join(" ");
   }, []);
 
-  const onNotification = React.useCallback((parsed: number, event: Event) => {
+  const onNotification = React.useCallback((parsed: number | string, event: Event) => {
     console.log("Hook notification handler", { parsed, event });
     setStream(parsed);
   }, []);
@@ -59,6 +53,9 @@ export const BluetoothDisplay: React.FC<Props> = ({
   const { device, status, startStream, stopStream } = useBluetoothNotifications({
     serviceUuid,
     characteristicUuid,
+    deviceOptions: {
+      filters: [{ services: [serviceUuid] }],
+    },
     onNotification,
     onError,
     parser,

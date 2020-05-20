@@ -1,8 +1,6 @@
 import {
   BluetoothNotificationsHookOptions,
   BluetoothConnections,
-  TEMPERATURE_MEASUREMENT_UUID,
-  HEALTH_THERMOMETER_UUID,
   BluetoothNotificationsStatus,
   BluetoothEvent,
   USER_CANCEL_ERROR_CODE,
@@ -11,9 +9,9 @@ import { useCallback, useState, useEffect, useMemo } from "react";
 import { getFloatValue } from "./utils/getFloatValue";
 
 export const defaultHookOptions = {
-  serviceUuid: HEALTH_THERMOMETER_UUID,
-  characteristicUuid: TEMPERATURE_MEASUREMENT_UUID,
-  deviceOptions: { filters: [{ services: [HEALTH_THERMOMETER_UUID] }] },
+  serviceUuid: "",
+  characteristicUuid: "",
+  deviceOptions: { acceptAllDevices: true, optionalServices: [] },
   onNotification: (parsed: number | string, event: Event) => {
     return;
   },
@@ -49,7 +47,6 @@ export function useBluetoothNotifications(
     (event: Event) => {
       const value = (event.target as BluetoothRemoteGATTCharacteristic).value;
       if (value) {
-        // const parsed = parser(value, value.byteOffset);
         const parsed = parser(value);
         if (onNotification) {
           onNotification(parsed, event);
