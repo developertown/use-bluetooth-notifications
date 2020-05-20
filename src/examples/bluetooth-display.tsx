@@ -1,10 +1,6 @@
 import * as React from "react";
 import cn from "classnames";
-import {
-  TEMPERATURE_MEASUREMENT_UUID,
-  HEALTH_THERMOMETER_UUID,
-  BluetoothNotificationsStatus,
-} from "../types/Bluetooth";
+import { BluetoothNotificationsStatus } from "../types/Bluetooth";
 import useBluetoothNotifications from "..";
 
 type Props = {
@@ -19,8 +15,8 @@ const Grid: React.FC<React.PropsWithChildren<{}>> = ({ children }) => (
 );
 
 export const BluetoothDisplay: React.FC<Props> = ({
-  serviceUuid = HEALTH_THERMOMETER_UUID,
-  characteristicUuid = TEMPERATURE_MEASUREMENT_UUID,
+  serviceUuid = "health_thermometer",
+  characteristicUuid = "temperature_measurement",
 }) => {
   const [stream, setStream] = React.useState<number | string | null>(null);
 
@@ -58,7 +54,7 @@ export const BluetoothDisplay: React.FC<Props> = ({
     },
     onNotification,
     onError,
-    parser,
+    // parser,
   });
 
   const color = cn({
@@ -100,6 +96,7 @@ export const BluetoothDisplay: React.FC<Props> = ({
           onClick={async (event) => {
             console.log("Starting notifications...");
             try {
+              setStream(null);
               await startStream();
             } catch (error) {
               console.error("Error starting stream:", error);

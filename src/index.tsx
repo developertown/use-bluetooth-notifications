@@ -12,10 +12,10 @@ export const defaultHookOptions = {
   serviceUuid: "",
   characteristicUuid: "",
   deviceOptions: { acceptAllDevices: true, optionalServices: [] },
+  parser: getFloatValue,
   onNotification: (parsed: number | string, event: Event) => {
     return;
   },
-  parser: getFloatValue,
 };
 
 export function useBluetoothNotifications(
@@ -56,6 +56,18 @@ export function useBluetoothNotifications(
     [onNotification, parser],
   );
 
+  const handleError = useCallback(
+    (error: Error) => {
+      setStatus(BluetoothNotificationsStatus.ERROR);
+      if (onError) {
+        onError(error);
+      } else {
+        throw error;
+      }
+    },
+    [onError],
+  );
+
   const reset = useCallback(() => {
     setCharacteristic(undefined);
     setService(undefined);
@@ -83,8 +95,8 @@ export function useBluetoothNotifications(
       if (server) {
         setServer(server);
         service = await server.getPrimaryService(serviceUuid);
-        characteristic = await service.getCharacteristic(characteristicUuid);
         setService(service);
+        characteristic = await service.getCharacteristic(characteristicUuid);
         setCharacteristic(characteristic);
 
         await characteristic.startNotifications();
@@ -98,14 +110,9 @@ export function useBluetoothNotifications(
         setStatus(BluetoothNotificationsStatus.CANCELLED);
         return;
       }
-      setStatus(BluetoothNotificationsStatus.ERROR);
-      if (onError) {
-        onError(error);
-      } else {
-        throw error;
-      }
+      handleError(error);
     }
-  }, [bluetooth, characteristicUuid, deviceOptions, onError, serviceUuid]);
+  }, [bluetooth, characteristicUuid, deviceOptions, handleError, serviceUuid]);
 
   const stopStream = useCallback(async () => {
     try {
@@ -115,14 +122,9 @@ export function useBluetoothNotifications(
         reset();
       }
     } catch (error) {
-      setStatus(BluetoothNotificationsStatus.ERROR);
-      if (onError) {
-        onError(error);
-      } else {
-        throw error;
-      }
+      handleError(error);
     }
-  }, [characteristic, device, onError, reset]);
+  }, [characteristic, device, handleError, reset]);
 
   useEffect(() => {
     if (characteristic) {

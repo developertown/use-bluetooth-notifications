@@ -61,3 +61,40 @@ export const getFloatValue = (value: DataView, offset = 0): number => {
 
   return mantissa * Math.pow(10, exponent);
 };
+
+export function parseIeee11073(value: DataView, offset = 0): number {
+  const buffer = new ArrayBuffer(5);
+  const dv = new DataView(buffer);
+  dv.setUint32(offset, 0x06c10ff);
+  const val = value;
+  value = dv;
+  // if the last byte is a negative value (MSB is 1), the final
+  // float should be too
+  const negative = value.getInt8(offset + 2) >>> 31;
+
+  // this is how the bytes are arranged in the byte array/DataView
+  // buffer
+  const [exponent, b0, b1, b2] = [
+    // get first three bytes as unsigned since we only care
+    // about the last 8 bits of 32-bit js number returned by
+    // getUint8().
+    // Should be the same as: getInt8(offset) & -1 >>> 24
+    value.getUint8(offset),
+    value.getUint8(offset + 1),
+    value.getUint8(offset + 2),
+
+    // get the last byte, which is the exponent, as a signed int
+    // since it's already correct
+    value.getInt8(offset + 3),
+  ];
+
+  let mantissa = b2 | (b1 << 8) | (b0 << 16);
+  if (negative) {
+    // need to set the most significant 8 bits to 1's since a js
+    // number is 32 bits but our mantissa is only 24.
+    mantissa |= 255 << 24;
+  }
+
+  console.log("exponent:", exponent);
+  return mantissa * Math.pow(10, exponent);
+}

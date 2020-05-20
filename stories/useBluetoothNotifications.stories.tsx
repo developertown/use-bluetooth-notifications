@@ -1,6 +1,5 @@
 import React from "react";
 import BluetoothDisplay from "../src/examples/bluetooth-display";
-import { HEALTH_THERMOMETER_UUID, TEMPERATURE_MEASUREMENT_UUID } from "../src/types/Bluetooth";
 
 export default {
   title: "useBluetoothNotifications",
@@ -8,6 +7,6 @@ export default {
 };
 
 export const thermometer = () => (
-  <BluetoothDisplay serviceUuid={HEALTH_THERMOMETER_UUID} characteristicUuid={TEMPERATURE_MEASUREMENT_UUID} />
+  <BluetoothDisplay serviceUuid={"health_thermometer"} characteristicUuid={"temperature_measurement"} />
 );
 // export const customService = () => <BluetoothDisplay serviceUuid="0xffe0" />;
