@@ -16,6 +16,9 @@ export const defaultHookOptions = {
   onNotification: (parsed: number | string, event: Event) => {
     return;
   },
+  onServerDisconnect: (event: Event) => {
+    return;
+  },
 };
 
 export function useBluetoothNotifications(
@@ -27,7 +30,15 @@ export function useBluetoothNotifications(
   const [characteristic, setCharacteristic] = useState<BluetoothRemoteGATTCharacteristic>();
   const [status, setStatus] = useState<BluetoothNotificationsStatus>(BluetoothNotificationsStatus.READY);
 
-  const { serviceUuid, characteristicUuid, deviceOptions, onNotification, onError, parser } = useMemo(() => {
+  const {
+    serviceUuid,
+    characteristicUuid,
+    deviceOptions,
+    onNotification,
+    onServerDisconnect,
+    onError,
+    parser,
+  } = useMemo(() => {
     return { ...defaultHookOptions, ..._options };
   }, [_options]);
 
@@ -95,8 +106,8 @@ export function useBluetoothNotifications(
       if (server) {
         setServer(server);
         service = await server.getPrimaryService(serviceUuid);
-        setService(service);
         characteristic = await service.getCharacteristic(characteristicUuid);
+        setService(service);
         setCharacteristic(characteristic);
 
         await characteristic.startNotifications();
@@ -126,17 +137,34 @@ export function useBluetoothNotifications(
     }
   }, [characteristic, device, handleError, reset]);
 
+  const _onServerDisconnect = useCallback(
+    (event: Event) => {
+      if (onServerDisconnect) {
+        onServerDisconnect(event);
+      }
+    },
+    [onServerDisconnect],
+  );
+
   useEffect(() => {
+    if (device) {
+      device.addEventListener(BluetoothEvent.onGATTServerDisconnected, _onServerDisconnect);
+    }
+
     if (characteristic) {
       characteristic.addEventListener(BluetoothEvent.onCharacteristicValueChanged, handleNotifications);
     }
 
     return () => {
+      if (device) {
+        device.removeEventListener(BluetoothEvent.onGATTServerDisconnected, _onServerDisconnect);
+      }
+
       if (characteristic) {
         characteristic.removeEventListener(BluetoothEvent.onCharacteristicValueChanged, handleNotifications);
       }
     };
-  }, [characteristic, handleNotifications]);
+  }, [_onServerDisconnect, characteristic, device, handleNotifications]);
 
   useEffect(() => {
     return () => {

@@ -29,6 +29,7 @@ export interface BluetoothNotificationsHookOptions {
   parser?: (data: DataView, offset?: number) => number | string;
   onNotification?: (parsed: number | string, event: Event) => void;
   onError?: (error: Error) => void;
+  onServerDisconnect?: (event: Event) => void;
 }
 
 export interface BluetoothConnections {

@@ -1,8 +1,6 @@
 import {
   BluetoothNotificationsHookOptions,
   BluetoothNotificationsStatus,
-  HEALTH_THERMOMETER_UUID,
-  TEMPERATURE_MEASUREMENT_UUID,
   BluetoothEvent,
   BluetoothMock,
 } from "../types/Bluetooth";
@@ -10,6 +8,8 @@ import { renderHook, act } from "@testing-library/react-hooks";
 import { useBluetoothNotifications } from "..";
 import { WebBluetoothMock, GattMock, CharacteristicMock, DeviceMock, PrimaryServiceMock } from "web-bluetooth-mock";
 
+const HEALTH_THERMOMETER_UUID = "health_thermometer";
+const TEMPERATURE_MEASUREMENT_UUID = "temperature_measurement";
 const DEVICE_NAME = "MyThermometer";
 
 describe("useBluetoothNotifications", () => {
@@ -30,7 +30,13 @@ describe("useBluetoothNotifications", () => {
   });
 
   test("should use bluetooth notifications", async () => {
-    const { result } = renderHook(() => useBluetoothNotifications());
+    const { result } = renderHook(() =>
+      useBluetoothNotifications({
+        serviceUuid: HEALTH_THERMOMETER_UUID,
+        characteristicUuid: TEMPERATURE_MEASUREMENT_UUID,
+        deviceOptions: { filters: [{ services: [HEALTH_THERMOMETER_UUID] }] },
+      }),
+    );
 
     expect(result.current.startStream).toBeDefined();
     expect(result.current.stopStream).toBeDefined();
@@ -51,6 +57,7 @@ describe("useBluetoothNotifications", () => {
       useBluetoothNotifications({
         serviceUuid: HEALTH_THERMOMETER_UUID,
         characteristicUuid: TEMPERATURE_MEASUREMENT_UUID,
+        deviceOptions: { filters: [{ services: [HEALTH_THERMOMETER_UUID] }] },
         parser,
       } as BluetoothNotificationsHookOptions),
     );
@@ -67,6 +74,7 @@ describe("useBluetoothNotifications", () => {
       useBluetoothNotifications({
         serviceUuid: HEALTH_THERMOMETER_UUID,
         characteristicUuid: TEMPERATURE_MEASUREMENT_UUID,
+        deviceOptions: { filters: [{ services: [HEALTH_THERMOMETER_UUID] }] },
         onNotification,
         onError,
         parser,
@@ -82,7 +90,13 @@ describe("useBluetoothNotifications", () => {
   });
 
   test("should disconnect from server on unmount", async () => {
-    const { result, unmount } = renderHook(() => useBluetoothNotifications());
+    const { result, unmount } = renderHook(() =>
+      useBluetoothNotifications({
+        serviceUuid: HEALTH_THERMOMETER_UUID,
+        characteristicUuid: TEMPERATURE_MEASUREMENT_UUID,
+        deviceOptions: { filters: [{ services: [HEALTH_THERMOMETER_UUID] }] },
+      }),
+    );
     if (result.current.server) {
       result.current.server.disconnect = jest.fn();
       unmount();
@@ -91,7 +105,13 @@ describe("useBluetoothNotifications", () => {
   });
 
   test("stopStream should clean up the device connections", async () => {
-    const { result } = renderHook(() => useBluetoothNotifications());
+    const { result } = renderHook(() =>
+      useBluetoothNotifications({
+        serviceUuid: HEALTH_THERMOMETER_UUID,
+        characteristicUuid: TEMPERATURE_MEASUREMENT_UUID,
+        deviceOptions: { filters: [{ services: [HEALTH_THERMOMETER_UUID] }] },
+      }),
+    );
     await act(async () => {
       await result.current.startStream();
     });
