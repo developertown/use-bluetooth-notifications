@@ -23,8 +23,8 @@ export enum BluetoothEvent {
 export type BluetoothMock = Bluetooth & WebBluetoothMock;
 
 export interface BluetoothNotificationsHookOptions {
-  characteristicUuid: string;
   serviceUuid: string;
+  characteristicUuid: string;
   deviceOptions?: RequestDeviceOptions;
   parser?: (data: DataView, offset?: number) => number | string;
   onNotification?: (parsed: number | string, event: Event) => void;
