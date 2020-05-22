@@ -57,7 +57,7 @@ export function useBluetoothNotifications(
   const handleNotifications = useCallback(
     (event: Event) => {
       const value = (event.target as BluetoothRemoteGATTCharacteristic).value;
-      if (value) {
+      if (value && parser) {
         const parsed = parser(value);
         if (onNotification) {
           onNotification(parsed, event);
