@@ -1,14 +1,14 @@
 import * as React from "react";
 import cn from "classnames";
 import { BluetoothNotificationsStatus } from "../types/Bluetooth";
-import useBluetoothNotifications from "..";
+import { useBluetoothNotifications } from "..";
 
 type Props = {
   serviceUuid?: string;
   characteristicUuid?: string;
 };
 
-const Grid: React.FC<React.PropsWithChildren<{}>> = ({ children }) => (
+const Grid: React.FC<{}> = ({ children }) => (
   <div style={{ padding: "1rem" }}>
     <div style={{ display: "grid", gridTemplateColumns: "100%", gridGap: "1rem" }}>{children}</div>
   </div>

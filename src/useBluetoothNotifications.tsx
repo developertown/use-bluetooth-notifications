@@ -42,17 +42,25 @@ export function useBluetoothNotifications(
     return { ...defaultHookOptions, ..._options };
   }, [_options]);
 
-  const bluetooth: Bluetooth = useMemo(() => {
-    if (!navigator.bluetooth) {
-      const error = new Error("This device is not capable of using bluetooth");
+  const handleError = useCallback(
+    (error: Error) => {
+      setStatus(BluetoothNotificationsStatus.ERROR);
       if (onError) {
         onError(error);
       } else {
         throw error;
       }
+    },
+    [onError],
+  );
+
+  const bluetooth: Bluetooth = useMemo(() => {
+    if (!navigator.bluetooth) {
+      const error = new Error("This device is not capable of using bluetooth");
+      handleError(error);
     }
     return navigator.bluetooth;
-  }, [onError]);
+  }, [handleError]);
 
   const handleNotifications = useCallback(
     (event: Event) => {
@@ -65,18 +73,6 @@ export function useBluetoothNotifications(
       }
     },
     [onNotification, parser],
-  );
-
-  const handleError = useCallback(
-    (error: Error) => {
-      setStatus(BluetoothNotificationsStatus.ERROR);
-      if (onError) {
-        onError(error);
-      } else {
-        throw error;
-      }
-    },
-    [onError],
   );
 
   const reset = useCallback(() => {
@@ -95,8 +91,6 @@ export function useBluetoothNotifications(
   const startStream = useCallback(async () => {
     try {
       setStatus(BluetoothNotificationsStatus.STARTING);
-      let service: BluetoothRemoteGATTService;
-      let characteristic: BluetoothRemoteGATTCharacteristic;
 
       const device = await bluetooth.requestDevice(deviceOptions);
       setDevice(device);
@@ -105,8 +99,8 @@ export function useBluetoothNotifications(
 
       if (server) {
         setServer(server);
-        service = await server.getPrimaryService(serviceUuid);
-        characteristic = await service.getCharacteristic(characteristicUuid);
+        const service = await server.getPrimaryService(serviceUuid);
+        const characteristic = await service.getCharacteristic(characteristicUuid);
         setService(service);
         setCharacteristic(characteristic);
 
@@ -137,7 +131,7 @@ export function useBluetoothNotifications(
     }
   }, [characteristic, device, handleError, reset]);
 
-  const _onServerDisconnect = useCallback(
+  const handleServerDisconnect = useCallback(
     (event: Event) => {
       if (onServerDisconnect) {
         onServerDisconnect(event);
@@ -148,7 +142,7 @@ export function useBluetoothNotifications(
 
   useEffect(() => {
     if (device) {
-      device.addEventListener(BluetoothEvent.onGATTServerDisconnected, _onServerDisconnect);
+      device.addEventListener(BluetoothEvent.onGATTServerDisconnected, handleServerDisconnect);
     }
 
     if (characteristic) {
@@ -157,14 +151,14 @@ export function useBluetoothNotifications(
 
     return () => {
       if (device) {
-        device.removeEventListener(BluetoothEvent.onGATTServerDisconnected, _onServerDisconnect);
+        device.removeEventListener(BluetoothEvent.onGATTServerDisconnected, handleServerDisconnect);
       }
 
       if (characteristic) {
         characteristic.removeEventListener(BluetoothEvent.onCharacteristicValueChanged, handleNotifications);
       }
     };
-  }, [_onServerDisconnect, characteristic, device, handleNotifications]);
+  }, [handleServerDisconnect, characteristic, device, handleNotifications]);
 
   useEffect(() => {
     return () => {
