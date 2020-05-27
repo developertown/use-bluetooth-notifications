@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import * as React from "react";
 import cn from "classnames";
 import { BluetoothNotificationsStatus } from "../types/Bluetooth";
@@ -21,8 +22,6 @@ export const BluetoothDisplay: React.FC<Props> = ({
   const [stream, setStream] = React.useState<number | string | null>(null);
 
   const parser = React.useCallback((val: DataView, offset = 0) => {
-    const noFirstByte = val.buffer.slice(1);
-    console.log("value", val, noFirstByte, new Uint32Array(noFirstByte));
     const a: string[] = [];
 
     // Convert raw data bytes to hex values just for the sake of showing something.
@@ -32,8 +31,6 @@ export const BluetoothDisplay: React.FC<Props> = ({
     for (let i = 0; i < val.byteLength; i++) {
       a.push(("00" + val.getUint8(i).toString(16)).slice(-2));
     }
-
-    console.log("parsed as string", parseInt(a.join("")));
     return a.join(" ");
   }, []);
 
@@ -54,7 +51,7 @@ export const BluetoothDisplay: React.FC<Props> = ({
     },
     onNotification,
     onError,
-    // parser,
+    parser,
   });
 
   const color = cn({
