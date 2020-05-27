@@ -27,21 +27,15 @@
       "pre-commit": "tsdx lint"
     }
   },
-  "name": "use-bluetooth-notifications",
+  "name": "@developertown/use-bluetooth-notifications",
   "author": "Matt Williams",
   "module": "dist/use-bluetooth-notifications.esm.js",
   "devDependencies": {
     "@babel/core": "^7.9.6",
-    "@storybook/addon-actions": "^5.3.18",
-    "@storybook/addon-docs": "^5.3.18",
-    "@storybook/addon-info": "^5.3.18",
-    "@storybook/addon-links": "^5.3.18",
-    "@storybook/addons": "^5.3.18",
     "@storybook/react": "^5.3.18",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/jest": "^25.1.4",
     "@types/react": "^16.9.35",
-    "@types/react-dom": "^16.9.8",
     "@types/web-bluetooth": "^0.0.5",
     "@typescript-eslint/eslint-plugin": "^2.24.0",
     "@typescript-eslint/parser": "^2.24.0",
@@ -63,15 +57,14 @@
     "react": "^16.13.1",
     "react-docgen-typescript-loader": "^3.7.2",
     "react-dom": "^16.13.1",
-    "react-is": "^16.13.1",
     "react-scripts": "^3.4.1",
+    "react-test-renderer": "^16.13.1",
     "ts-loader": "^7.0.4",
     "tsdx": "^0.13.2",
-    "tslib": "^1.12.0",
     "typescript": "^3.9.2",
     "web-bluetooth-mock": "^1.0.2"
   },
   "dependencies": {
-    "react-test-renderer": "^16.13.1"
+    "@types/classnames": "^2.2.10"
   }
 }

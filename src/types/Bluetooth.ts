@@ -1,9 +1,4 @@
-export interface BluetoothNotificationsPayload {
-  status: BluetoothNotificationsStatus;
-  setListener: (listener: (data: BluetoothRemoteGATTCharacteristic) => void) => void;
-  startNotifications: () => void;
-  stopNotifications: () => void;
-}
+import { WebBluetoothMock } from "web-bluetooth-mock";
 
 export enum BluetoothNotificationsStatus {
   READY = "ready",
@@ -16,64 +11,25 @@ export enum BluetoothNotificationsStatus {
 }
 
 export enum BluetoothEvent {
-  onAdvertisementReceived = "onadvertisementreceived",
-  onAvailabilityChanged = "onavailabilitychanged",
-  onGATTServerDisconnected = "ongattserverdisconnected",
-  onCharacteristicValueChanged = "oncharacteristicvaluechanged",
-  onServiceAdded = "onserviceadded",
-  onServiceChanged = "onservicechanged",
-  onServiceRemoved = "onserviceremoved",
+  onAdvertisementReceived = "advertisementreceived",
+  onAvailabilityChanged = "availabilitychanged",
+  onGATTServerDisconnected = "gattserverdisconnected",
+  onCharacteristicValueChanged = "characteristicvaluechanged",
+  onServiceAdded = "serviceadded",
+  onServiceChanged = "servicechanged",
+  onServiceRemoved = "serviceremoved",
 }
 
-export type BluetoothEventHandler<T = void> = (event: Event) => T;
-
-export interface BluetoothDeviceRequestCancel {
-  type: "cancel";
-}
-
-export interface BluetoothDeviceRequestSuccess {
-  type: "success";
-  device: BluetoothDevice;
-}
-
-export interface BluetoothGattConnectSuccess {
-  type: "success";
-  server: BluetoothRemoteGATTServer;
-}
-
-export interface BluetoothServiceRequestSuccess {
-  type: "success";
-  service: BluetoothRemoteGATTService;
-}
-
-export interface BluetoothCharacteristicRequestSuccess {
-  type: "success";
-  characteristic: BluetoothRemoteGATTCharacteristic;
-}
-
-export interface BluetoothStartStreamSuccess {
-  type: "success";
-  // stream: string;
-  device: BluetoothDevice;
-  server: BluetoothRemoteGATTServer;
-  service: BluetoothRemoteGATTService;
-  characteristic: BluetoothRemoteGATTCharacteristic;
-}
-
-export enum BluetoothDeviceRequestStatus {
-  CANCEL = "cancel",
-  ERROR = "error",
-  SUCCESS = "success",
-  REQUESTING = "requesting",
-  READY = "ready",
-}
+export type BluetoothMock = Bluetooth & WebBluetoothMock;
 
 export interface BluetoothNotificationsHookOptions {
-  characteristicUuid: string;
   serviceUuid: string;
+  characteristicUuid: string;
   deviceOptions?: RequestDeviceOptions;
-  notificationHandler?: (parsed: string, event: Event) => void;
-  parser?: (data: DataView, offset: number) => string | number;
+  parser?: (data: DataView, offset?: number) => number | string;
+  onNotification?: (parsed: number | string, event: Event) => void;
+  onError?: (error: Error) => void;
+  onServerDisconnect?: (event: Event) => void;
 }
 
 export interface BluetoothConnections {
@@ -87,5 +43,4 @@ export interface BluetoothConnections {
   stopStream: () => void;
 }
 
-export const HEALTH_THERMOMETER_UUID = "health_thermometer";
-export const TEMPERATURE_MEASUREMENT_UUID = "temperature_measurement";
+export const USER_CANCEL_ERROR_CODE = 8;
